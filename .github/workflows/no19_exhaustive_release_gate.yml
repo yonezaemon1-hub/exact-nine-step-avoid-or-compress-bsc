@@ -1,0 +1,166 @@
+name: No.19 exhaustive release gate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.tex"
+
+permissions:
+  contents: write
+
+jobs:
+  exhaustive-gate:
+    runs-on: ubuntu-latest
+    container: debian:13.3
+    steps:
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates git g++ python3 zip gh \
+            texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended lmodern
+
+      - name: Check out candidate
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        shell: bash
+        run: |
+          python3 --version
+          g++ --version | head -1
+          pdflatex --version | head -2
+          cat /etc/os-release
+
+      - name: Verify fixed R5 manuscript
+        shell: bash
+        run: |
+          test "$(sha256sum Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.pdf | cut -d' ' -f1)" = "e5ac210abd28269c7710e6274e246ac50b1e16e98726125f84e9ab20afe41d48"
+          grep -q 'T_{\\BSC}(3,7)=9' Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.tex
+
+      - name: Compile exhaustive branch certifiers
+        shell: bash
+        run: |
+          for s in \
+            NO19_CASE_II_DD \
+            NO19_CASE_II_DQ \
+            NO19_CASE_I_PP \
+            NO19_CASE_I_PQ_PSING_QANY \
+            NO19_CASE_I_PQ_PPERM_QSING \
+            NO19_CASE_O_PP \
+            NO19_CASE_O_PQ_PSING_QANY \
+            NO19_CASE_O_PQ_PPERM_QSING; do
+              g++ -O3 -std=c++17 "$s.cpp" -o "$s"
+          done
+
+      - name: Run all 432,128,504 exhaustive branch checks
+        shell: bash
+        run: |
+          : > NO19_GITHUB_FULL_BRANCH_RERUN.log
+          declare -A PAIRS LOCAL ORBITS SECOND
+          PAIRS[NO19_CASE_II_DD]=9615680; LOCAL[NO19_CASE_II_DD]=0; ORBITS[NO19_CASE_II_DD]=822; SECOND[NO19_CASE_II_DD]=449280
+          PAIRS[NO19_CASE_II_DQ]=44971752; LOCAL[NO19_CASE_II_DQ]=88; ORBITS[NO19_CASE_II_DQ]=822; SECOND[NO19_CASE_II_DQ]=4703040
+          PAIRS[NO19_CASE_I_PP]=91957456; LOCAL[NO19_CASE_I_PP]=677; ORBITS[NO19_CASE_I_PP]=3030; SECOND[NO19_CASE_I_PP]=1333920
+          PAIRS[NO19_CASE_I_PQ_PSING_QANY]=136030656; LOCAL[NO19_CASE_I_PQ_PSING_QANY]=677; ORBITS[NO19_CASE_I_PQ_PSING_QANY]=3030; SECOND[NO19_CASE_I_PQ_PSING_QANY]=4703040
+          PAIRS[NO19_CASE_I_PQ_PPERM_QSING]=70824720; LOCAL[NO19_CASE_I_PQ_PPERM_QSING]=430; ORBITS[NO19_CASE_I_PQ_PPERM_QSING]=5520; SECOND[NO19_CASE_I_PQ_PPERM_QSING]=1074240
+          PAIRS[NO19_CASE_O_PP]=23496800; LOCAL[NO19_CASE_O_PP]=0; ORBITS[NO19_CASE_O_PP]=569; SECOND[NO19_CASE_O_PP]=1281600
+          PAIRS[NO19_CASE_O_PQ_PSING_QANY]=34903200; LOCAL[NO19_CASE_O_PQ_PSING_QANY]=0; ORBITS[NO19_CASE_O_PQ_PSING_QANY]=569; SECOND[NO19_CASE_O_PQ_PSING_QANY]=4616640
+          PAIRS[NO19_CASE_O_PQ_PPERM_QSING]=20328240; LOCAL[NO19_CASE_O_PQ_PPERM_QSING]=0; ORBITS[NO19_CASE_O_PQ_PPERM_QSING]=1186; SECOND[NO19_CASE_O_PQ_PPERM_QSING]=987840
+
+          total_pairs=0
+          total_local=0
+          for s in "${!PAIRS[@]}"; do
+            echo "=== $s ===" | tee -a NO19_GITHUB_FULL_BRANCH_RERUN.log
+            ./"$s" > "$s.GITHUB_RERUN.out" 2>&1
+            cat "$s.GITHUB_RERUN.out" | tee -a NO19_GITHUB_FULL_BRANCH_RERUN.log
+            grep -q "^A_orbit_reps=${ORBITS[$s]}$" "$s.GITHUB_RERUN.out"
+            grep -q "^B_unary_candidates=${SECOND[$s]}$" "$s.GITHUB_RERUN.out"
+            grep -q "^pairs_full_checked=${PAIRS[$s]}$" "$s.GITHUB_RERUN.out"
+            grep -q "^local_survivors=${LOCAL[$s]}$" "$s.GITHUB_RERUN.out"
+            grep -q '^bsc_survivors=0$' "$s.GITHUB_RERUN.out"
+            total_pairs=$((total_pairs + PAIRS[$s]))
+            total_local=$((total_local + LOCAL[$s]))
+          done
+          test "$total_pairs" -eq 432128504
+          test "$total_local" -eq 1872
+          {
+            echo "TOTAL_FULL_PAIRS=$total_pairs"
+            echo "TOTAL_LOCAL_SURVIVORS=$total_local"
+            echo "TOTAL_BSC_SURVIVORS=0"
+            echo "PASS_ALL_8_BRANCHES=true"
+          } | tee NO19_GITHUB_BRANCH_SUMMARY.txt
+
+      - name: Run Python audits
+        shell: bash
+        run: |
+          python3 NO19_EXACT9_WITNESS_CHECK.py | tee NO19_EXACT9_WITNESS_CHECK.GITHUB.out
+          grep -q '^PASS$' NO19_EXACT9_WITNESS_CHECK.GITHUB.out
+          python3 NO19_DIRECT_WORD_AUDIT.py | tee NO19_DIRECT_WORD_AUDIT.GITHUB.out
+          grep -q 'PASS_NO19_DIRECT_WORD_AUDIT' NO19_DIRECT_WORD_AUDIT.GITHUB.out
+          python3 NO19_AFFINE_BASIS_CROSSCHECK.py | tee NO19_AFFINE_BASIS_CROSSCHECK.GITHUB.out
+          grep -q 'PASS_NO19_AFFINE_BASIS_CROSSCHECK' NO19_AFFINE_BASIS_CROSSCHECK.GITHUB.out
+          python3 NO19_LOCAL_SURVIVOR_CROSSBRANCH_SPOTCHECK.py | tee NO19_LOCAL_SURVIVOR_SPOTCHECK.GITHUB.out
+          grep -q 'PASS_CROSSBRANCH_LOCAL_SURVIVOR_SPOTCHECK' NO19_LOCAL_SURVIVOR_SPOTCHECK.GITHUB.out
+
+      - name: Run independent C++ audits
+        shell: bash
+        run: |
+          for s in \
+            NO19_UNARY_SAFE_ENUMERATOR \
+            NO19_UNARY_COUNTS_INDEPENDENT_V2 \
+            NO19_SINGULAR_COUNTS_THIRD_BRUTE \
+            NO19_II_DD_ORBIT_AUDIT_INDEPENDENT \
+            NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT; do
+              g++ -O3 -std=c++17 "$s.cpp" -o "$s"
+              ./"$s" | tee "$s.GITHUB.out"
+          done
+          grep -q 'PASS_NO19_UNARY_ENUMERATION' NO19_UNARY_SAFE_ENUMERATOR.GITHUB.out
+          grep -q 'PASS_INDEPENDENT_UNARY_COUNTS' NO19_UNARY_COUNTS_INDEPENDENT_V2.GITHUB.out
+          grep -q 'PASS_THIRD_BRUTE_SINGULAR_COUNTS' NO19_SINGULAR_COUNTS_THIRD_BRUTE.GITHUB.out
+          grep -q 'PASS_INDEPENDENT_II_DD_ORBIT_COUNT' NO19_II_DD_ORBIT_AUDIT_INDEPENDENT.GITHUB.out
+          grep -q 'PASS_INDEPENDENT_CPP_AUDITS' NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.GITHUB.out
+
+      - name: Compile manuscript from source
+        shell: bash
+        run: |
+          cp Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.tex NO19_GITHUB_BUILD.tex
+          pdflatex -interaction=nonstopmode -halt-on-error NO19_GITHUB_BUILD.tex
+          pdflatex -interaction=nonstopmode -halt-on-error NO19_GITHUB_BUILD.tex
+          test -s NO19_GITHUB_BUILD.pdf
+
+      - name: Create release package and hashes
+        shell: bash
+        run: |
+          mkdir -p NO19_RELEASE_PACKAGE
+          cp README.md CITATION.cff RELEASE_NOTES_v1.0.0.md WINDOWS_FULL_RERUN_SUMMARY.txt NO19_RELEASE_PACKAGE/
+          cp Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.tex Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.pdf NO19_RELEASE_PACKAGE/
+          cp NO19_CASE_*.cpp NO19_EXACT9_WITNESS_CHECK.py NO19_DIRECT_WORD_AUDIT.py NO19_AFFINE_BASIS_CROSSCHECK.py NO19_LOCAL_SURVIVOR_CROSSBRANCH_SPOTCHECK.py NO19_RELEASE_PACKAGE/
+          cp NO19_UNARY_SAFE_ENUMERATOR.cpp NO19_UNARY_COUNTS_INDEPENDENT_V2.cpp NO19_SINGULAR_COUNTS_THIRD_BRUTE.cpp NO19_II_DD_ORBIT_AUDIT_INDEPENDENT.cpp NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.cpp NO19_RELEASE_PACKAGE/
+          cp NO19_GITHUB_BRANCH_SUMMARY.txt NO19_GITHUB_FULL_BRANCH_RERUN.log *.GITHUB.out NO19_RELEASE_PACKAGE/ 2>/dev/null || true
+          if [ -d evidence/windows ]; then cp -R evidence/windows NO19_RELEASE_PACKAGE/; fi
+          find NO19_RELEASE_PACKAGE -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+          zip -qr NO19_EXACT_NINE_V1.0.0_RELEASE_PACKAGE.zip NO19_RELEASE_PACKAGE SHA256SUMS.txt
+          sha256sum NO19_EXACT_NINE_V1.0.0_RELEASE_PACKAGE.zip > RELEASE_PACKAGE_SHA256.txt
+
+      - name: Create or refresh draft v1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            gh release delete v1.0.0 --yes
+          fi
+          gh release create v1.0.0 \
+            --draft \
+            --target "$GITHUB_SHA" \
+            --title "No.19 v1.0.0" \
+            --notes-file RELEASE_NOTES_v1.0.0.md \
+            Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.pdf \
+            NO19_EXACT_NINE_V1.0.0_RELEASE_PACKAGE.zip \
+            SHA256SUMS.txt \
+            RELEASE_PACKAGE_SHA256.txt \
+            NO19_GITHUB_BRANCH_SUMMARY.txt \
+            WINDOWS_FULL_RERUN_SUMMARY.txt
