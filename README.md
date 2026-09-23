@@ -16,6 +16,14 @@ An explicit 11-state binary strongly connected synchronizing automaton has exact
 
 Across eight computational subcases, the certifier fully checks **432,128,504** symmetry-reduced, depth-two-compatible ordered pairs. It finds **1,872** local survivors and **0** binary strongly connected synchronizing survivors.
 
+## Archival record
+
+- GitHub Release: `v1.0.0`
+- Zenodo Software DOI: **10.5281/zenodo.22916196**
+- Zenodo record: https://zenodo.org/records/22916196
+- Release package SHA-256: `c3ed0b4d8df717fc9b68e0c63e39874a4d2fc715a30a7107c4b515febc45fb96`
+- Review R5 PDF SHA-256: `e5ac210abd28269c7710e6274e246ac50b1e16e98726125f84e9ab20afe41d48`
+
 ## Explicit exact-nine witness
 
 With `S={0,...,7}` and protected state `q=0`:
@@ -86,4 +94,4 @@ This is a hybrid analytic-finite theorem. The computation is used only after the
 
 ## Status
 
-Review R5, 23 September 2026. GitHub Release `v1.0.0` is public and passed the exhaustive release gate. An archival Zenodo DOI is being prepared.
+Public release complete on 23 September 2026. GitHub Release `v1.0.0` passed the exhaustive release gate. The archival software record is published at Zenodo under DOI `10.5281/zenodo.22916196`.
