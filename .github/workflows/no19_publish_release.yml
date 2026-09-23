@@ -1,0 +1,25 @@
+name: Publish No.19 v1.0.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/no19_publish_release.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish draft v1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh release view v1.0.0 --json isDraft,tagName,name,targetCommitish
+          gh release edit v1.0.0 --draft=false
+          gh release view v1.0.0 --json isDraft,tagName,name,publishedAt,url,targetCommitish
