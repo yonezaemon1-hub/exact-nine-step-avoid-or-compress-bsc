@@ -1,11 +1,13 @@
 name: No.19 exhaustive release gate
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - "Yonezu_2026_No19_Exact_Nine_Step_REVIEW_R5.tex"
+      - ".github/workflows/no19_exhaustive_release_gate.yml"
 
 permissions:
   contents: write
@@ -121,7 +123,10 @@ jobs:
           grep -q 'PASS_INDEPENDENT_UNARY_COUNTS' NO19_UNARY_COUNTS_INDEPENDENT_V2.GITHUB.out
           grep -q 'PASS_THIRD_BRUTE_SINGULAR_COUNTS' NO19_SINGULAR_COUNTS_THIRD_BRUTE.GITHUB.out
           grep -q 'PASS_INDEPENDENT_II_DD_ORBIT_COUNT' NO19_II_DD_ORBIT_AUDIT_INDEPENDENT.GITHUB.out
-          grep -q 'PASS_INDEPENDENT_CPP_AUDITS' NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.GITHUB.out
+          grep -q 'I_Psing .* PASS=1' NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.GITHUB.out
+          grep -q 'I_Pperm .* PASS=1' NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.GITHUB.out
+          grep -q 'O_Psing .* PASS=1' NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.GITHUB.out
+          grep -q 'O_Pperm .* PASS=1' NO19_ALL_ORBIT_QUOTIENT_AUDIT_INDEPENDENT.GITHUB.out
 
       - name: Compile manuscript from source
         shell: bash
