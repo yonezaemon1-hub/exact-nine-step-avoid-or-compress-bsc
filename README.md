@@ -86,4 +86,4 @@ This is a hybrid analytic-finite theorem. The computation is used only after the
 
 ## Status
 
-Review R5, 23 September 2026. Public-release preparation is in progress. No archival DOI has yet been assigned.
+Review R5, 23 September 2026. GitHub Release `v1.0.0` is public and passed the exhaustive release gate. An archival Zenodo DOI is being prepared.
