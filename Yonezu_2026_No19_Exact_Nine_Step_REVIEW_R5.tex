@@ -1,0 +1,452 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{longtable}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{conjecture}{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand{\Acal}{\mathcal A}
+\newcommand{\tauac}{\tau_{\rm ac}}
+\newcommand{\BSC}{\mathrm{BSC}}
+
+\title{An Exact Nine-Step Avoid-or-Compress Bound\\in Binary Strongly Connected Synchronizing Automata}
+\author{Ryutaro Yonezu\\Independent Researcher}
+\date{23 September 2026\\Review R5 -- not peer reviewed}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We determine the singleton-protected binary strongly connected synchronizing avoid-or-compress value at $(d,k)=(3,7)$. Here $n=11$, $|S|=8$, and $A=\{q\}$. The general avoid-or-compress and Frankl--Pin bounds both give ten, while an explicit 11-state binary strongly connected synchronizing automaton has exact distance nine. To exclude equality ten, we first prove that every exact-ten candidate must have maximal affine growth through depth nine, a unique global one-step merge pair $D$, rank ten for every singular letter with kernel doubleton $D$, and $q\notin D$. A predecessor-hyperplane argument reduces all candidates to six normal-form branches: O-PP and O-PQ when $D\subseteq Q\setminus S$, and I-PP, I-PQ, II-DD, and II-DQ when $D$ is mixed. A deterministic exhaustive certifier then quotients the first letter by the relabeling symmetries that preserve the normal form, enumerates every admissible unary depth-nine-safe second letter, and checks two-letter safety and the required affine dimension at every depth through nine. Any local survivor is subsequently tested for strong connectivity and synchronizability by the complete unordered-pair criterion. Across eight computational subcases covering the six branches, 432,128,504 symmetry-reduced, depth-two-compatible ordered pairs are fully checked. There are 1,872 local survivors, but none is strongly connected or synchronizing. Hence no exact-ten binary strongly connected synchronizing candidate exists, and therefore
+\[
+T_{\BSC}(3,7)=9.
+\]
+The computation is finite, deterministic, and independently anchored by direct verification of the exact-nine witness and the unary normal-form counts.
+\end{abstract}
+
+\section{Introduction}
+Szyku\l a's avoid-or-compress lemma bounds the length needed either to avoid a prescribed proper subset $A$ from the image of a larger set $S$ or to compress $S$ \cite{Szykula2018,Szykula2026}. Writing
+\[
+d=n-|S|,\qquad k=|S|-|A|,
+\]
+two standard bounds combine to give
+\begin{equation}\label{eq:U}
+U(d,k)=\min\left\{d+k,\binom{d+2}{2}\right\}.
+\end{equation}
+The first term is the avoid-or-compress bound $n-|A|$; the second is the Frankl--Pin one-step subset-compression bound \cite{Volkov2022,Szykula2026}.
+
+The point $(d,k)=(3,7)$ is the smallest concrete case in our program where the two mechanisms meet at the same value:
+\[
+U(3,7)=\min\{10,10\}=10.
+\]
+This paper focuses on the singleton-protected slice $A=\{q\}$. Then
+\[
+n=11,\qquad |S|=8,\qquad |Q\setminus S|=3.
+\]
+For brevity, $T_{\BSC}(3,7)$ below denotes the worst-case value in this 11-state binary strongly connected synchronizing slice.
+
+The central question is whether the value ten is actually attainable. We close it negatively. The analytic part derives the equality conditions and the six normal-form branches. The computational part is then a finite certifier over exactly those branches, with no heuristic search, random sampling, or unrecovered legacy enumeration. It proves that every branch is empty in the binary strongly connected synchronizing slice. Combined with the explicit distance-nine witness, this yields the exact value $T_{\BSC}(3,7)=9$.
+
+\section{Setup and a nine-step lower witness}
+For a binary automaton $\Acal=(Q,\{a,b\},\delta)$, an 8-set $S\subset Q$, and $q\in S$, define
+\[
+\tau(S,q)=\min\{|w|:q\notin Sw\text{ or }|Sw|<8\}.
+\]
+A word is \emph{safe} if its length is smaller than $\tau(S,q)$.
+
+The general bound \eqref{eq:U} gives
+\begin{equation}\label{eq:upper10}
+\tau(S,q)\le10.
+\end{equation}
+
+\begin{proposition}[Explicit exact-nine witness]\label{prop:witness}
+There exists an 11-state binary strongly connected synchronizing automaton with $S=\{0,\ldots,7\}$, $q=0$, and $\tau(S,q)=9$.
+\end{proposition}
+\begin{proof}
+Take
+\[
+a=[4,7,3,8,0,6,5,1,9,2,10],
+\]
+\[
+b=[1,6,7,3,4,0,5,8,7,10,9],
+\]
+where the entry in position $i$ is the image of state $i$. Exact breadth-first search in the subset automaton gives first success at length nine; one shortest word is
+\[
+aabaaabab.
+\]
+The underlying directed graph is strongly connected. Reverse breadth-first search in the unordered pair automaton from the diagonal reaches all 66 unordered pairs (including the 11 diagonal pairs), proving synchronization.
+\end{proof}
+
+Therefore
+\begin{equation}\label{eq:9-10}
+9\le T_{\BSC}(3,7)\le10.
+\end{equation}
+The rest of the paper studies the equality hypothesis $\tau(S,q)=10$ and eliminates it completely.
+
+\section{Equality in the affine-span argument}
+For each word $w$, let $[Sw]\in\mathbb R^{Q}$ denote the characteristic row vector of $Sw$, and let $M_w$ be the transition matrix of $w$. Define
+\[
+V_i=\operatorname{span}\{[S]M_w:|w|\le i\}.
+\]
+Equivalently, for complements $C_w=Q\setminus Sw$, let $\mathcal C_i=\{C_w:|w|\le i\}$ and consider the affine hull of their characteristic vectors.
+
+\begin{lemma}[Maximal equality growth]\label{lem:affine}
+If $\tau(S,q)=10$, then
+\[
+\dim V_i=i+1\qquad(0\le i\le9),
+\]
+and equivalently
+\[
+\operatorname{affdim}\mathcal C_i=i\qquad(0\le i\le9).
+\]
+In particular $\operatorname{affdim}\mathcal C_8=8$.
+\end{lemma}
+\begin{proof}
+The standard linear avoid-or-compress proof constructs an ascending chain beginning with the one-dimensional span of $[S]$. If the dimension fails to increase at some level before nine, the stabilized subspace argument produces a successful word strictly before length ten. Equality in the ten-step bound therefore forces one new independent direction at every level $1,\ldots,9$. Passing from image vectors to complement vectors is an affine translation by the all-ones vector and gives the equivalent affine statement.
+\end{proof}
+
+This is the first rigidity condition: a ten-step witness must achieve equality at every stage of the underlying linear argument, not merely at the final bound.
+
+\section{A unique one-step merge pair}
+A pair $\{x,y\}$ is a \emph{one-step merge pair} if some letter $c\in\{a,b\}$ satisfies $xc=yc$. Let $P_1$ be the set of all such unordered pairs.
+
+Kisielewicz, Kowalski, and Szyku\l a refined the Frankl--Pin compression bound as follows. If $P$ is a set of compressible pairs, $p(P)$ is the maximum length of an appropriate Frankl--Pin sequence over $P$, and $h(P)$ is its synchronizing height, then an $m$-subset can be compressed within
+\[
+\binom{n-m+2}{2}-p(P)+h(P)
+\]
+steps \cite{KKS2016}. Here $n=11$ and $m=8$, so the base term is ten.
+
+\begin{theorem}[Unique one-step merge pair]\label{thm:uniqueD}
+Assume $\tau(S,q)=10$. Then $P_1$ consists of exactly one pair, denoted
+\[
+D=\{x_D,y_D\}.
+\]
+Consequently every letter is either a permutation or has rank ten, and every singular letter has the same unique doubleton kernel block $D$.
+\end{theorem}
+\begin{proof}
+A synchronizing automaton has at least one singular letter, so $P_1\ne\varnothing$. For $P=P_1$ we have $h(P)=1$. If $P_1$ contained two distinct pairs, then $p(P_1)\ge2$, and the KKS refinement would give a word compressing the 8-set $S$ in at most
+\[
+10-2+1=9
+\]
+steps, contradicting $\tau(S,q)=10$.
+
+Thus there is exactly one one-step merge pair $D$. If a singular letter had rank at most nine, then its kernel would contain either a block of size at least three or at least two nontrivial blocks, producing at least two merged pairs. Hence each singular letter has rank ten and exactly one doubleton kernel block. Uniqueness of $P_1$ forces that block to be the same $D$ for every singular letter.
+\end{proof}
+
+\section{The protected state is not in the merge pair}
+\begin{theorem}\label{thm:qnotD}
+Under the equality hypothesis $\tau(S,q)=10$,
+\[
+q\notin D.
+\]
+\end{theorem}
+\begin{proof}
+Suppose $D=\{q,r\}$. Since a singular letter merges the two states in $D$, the initial set $S$ cannot contain both: otherwise one letter would compress $S$. Hence $r\notin S$.
+
+For every word $u$ with $|u|\le8$, safety gives $q\in Su$ and $|Su|=8$. If also $r\in Su$, then applying any singular letter would merge $q$ and $r$ and compress $Su$, giving a successful word of length at most nine. Therefore
+\[
+r\notin Su\qquad\text{for all }|u|\le8.
+\]
+
+Strong connectivity contradicts this. Choose a shortest word $u$ such that $r\in Su$. Along a shortest path from some state of $S$ to $r$, no internal vertex can lie in $S$, because then the suffix from that vertex would give a shorter word from $S$ to $r$. Thus all internal states lie in $Q\setminus S$. There are only three outside states, including $r$, so a simple shortest path has length at most three. Hence $r\in Su$ for some $|u|\le3$, contradiction.
+\end{proof}
+
+\begin{corollary}[The merge pair cannot lie inside $S$]\label{cor:DnotinS}
+Under the equality hypothesis $\tau(S,q)=10$,
+\[
+D\nsubseteq S.
+\]
+\end{corollary}
+\begin{proof}
+By Theorem~\ref{thm:uniqueD}, at least one letter is singular and every singular letter merges exactly the two states of $D$. If $D\subseteq S$, applying any singular letter to $S$ would identify those two states and give $|Sc|<|S|$ in one step, contradicting $\tau(S,q)=10$.
+\end{proof}
+
+Together with Theorem~\ref{thm:qnotD}, this leaves exactly two locations for $D$: \emph{mixed}, with one endpoint in $S\setminus\{q\}$ and one outside $S$, or \emph{outside}, with both endpoints outside $S$.
+
+\section{Branch decomposition by predecessor hyperplanes}\label{sec:branches}
+The proof now uses only the equality dimension from Lemma~\ref{lem:affine}, the unique merge pair from Theorem~\ref{thm:uniqueD}, and the exclusion $q\notin D$ from Theorem~\ref{thm:qnotD}. No exclusion of the outside-$D$ geometry is assumed.
+
+For $|w|\le8$, safety gives $q\in Sw$ and $|Sw|=8$. Hence the complement $C_w=Q\setminus Sw$ is a three-set not containing $q$. Its characteristic vector therefore lies in the affine space
+\[
+H=\left\{x\in\mathbb R^Q:x_q=0,\ \sum_{v\in Q}x_v=3\right\},
+\]
+which has affine dimension nine. Lemma~\ref{lem:affine} says that the affine hull of $\{[C_w]:|w|\le8\}$ has dimension eight. Thus the safe complements may satisfy one nontrivial affine hyperplane condition inside $H$, but not two independent ones.
+
+For a letter $c$, Theorem~\ref{thm:uniqueD} implies that $c$ is a permutation or a rank-ten map with kernel doubleton $D$. Since $q\notin D$, an empty preimage of $q$ would make the one-letter word $c$ successful, so $c^{-1}(q)$ is nonempty. It is therefore either a singleton or the whole pair $D$. We use the following types:
+\[
+Q:\ c^{-1}(q)=\{q\},\qquad
+P_p:\ c^{-1}(q)=\{p\}\ (p\ne q),\qquad
+D:\ c^{-1}(q)=D.
+\]
+
+\begin{lemma}[Predecessor hyperplanes]\label{lem:predhyper}
+Assume $\tau(S,q)=10$.
+\begin{enumerate}[label=(\roman*)]
+\item If a letter has type $P_p$, then every $C_w$ with $|w|\le8$ satisfies $x_p=0$.
+\item If a letter has type $D=\{d_1,d_2\}$, then every $C_w$ with $|w|\le8$ satisfies
+\[
+x_{d_1}+x_{d_2}=1.
+\]
+\item Consequently all $P$-type letters have the same predecessor $p$, and $P$-type and $D$-type letters cannot coexist.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+If $c^{-1}(q)=\{p\}$, then $q\in Swc$ for every $|w|\le8$ forces $p\in Sw$, equivalently $p\notin C_w$, which is $x_p=0$.
+
+If $c^{-1}(q)=D$, then $q\in Swc$ requires $Sw$ to contain at least one endpoint of $D$. At the same time, $|Swc|=|Sw|=8$ requires $Sw$ not to contain both endpoints, because $c$ merges exactly the pair $D$. Hence $Sw$ contains exactly one endpoint of $D$, and so does its complement $C_w$. This is $x_{d_1}+x_{d_2}=1$.
+
+Two distinct equations $x_p=0$ and $x_r=0$ with $p\ne r$ are independent on $H$, and so are $x_p=0$ and $x_{d_1}+x_{d_2}=1$. Either pair would force the affine hull of the safe complements to have dimension at most seven, contradicting Lemma~\ref{lem:affine}. Thus there is at most one $P$-predecessor and no $P$-type letter can coexist with a $D$-type letter.
+\end{proof}
+
+The QQ pattern is impossible in a strongly connected automaton: if both letters have $c^{-1}(q)=\{q\}$, then induction on word length shows that no state other than $q$ can ever reach $q$.
+
+\begin{theorem}[Normal-form branch decomposition]\label{thm:families}
+Assume $\tau(S,q)=10$ in the binary strongly connected synchronizing slice.
+\begin{enumerate}[label=(\alph*)]
+\item If $D\subseteq Q\setminus S$, then no letter can have type $D$, and up to exchange of the two letters the protected-state predecessor pattern is either
+\[
+\mathrm{O\!\text{-}PP}\quad\text{or}\quad\mathrm{O\!\text{-}PQ}.
+\]
+The same non-$q$ predecessor $p\in S\setminus\{q\}$ is used by every $P$-type letter.
+\item If $D$ is mixed, then after relabeling we may set
+\[
+S=\{0,1,\ldots,7\},\qquad q=0,\qquad D=\{1,8\}.
+\]
+If a $P$-type letter occurs, its common predecessor is distinct from the $S$-endpoint of $D$ and can be named $p=2$. Up to exchange of the two letters, every mixed candidate belongs to exactly one of the four families
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Family & protected preimages & rank restriction\\
+\midrule
+I-PP & $a^{-1}(0)=b^{-1}(0)=\{2\}$ & each Perm or Sing$_D$; at least one singular\\
+I-PQ & $a^{-1}(0)=\{2\}$, $b^{-1}(0)=\{0\}$ & at least one singular\\
+II-DD & $a^{-1}(0)=b^{-1}(0)=D$ & both singular\\
+II-DQ & $a^{-1}(0)=D$, $b^{-1}(0)=\{0\}$ & $a$ singular; $b$ Perm or Sing$_D$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+If $D\subseteq Q\setminus S$, then $S\cap D=\varnothing$. A type-$D$ letter would therefore satisfy $q\notin Sc$ and would be successful in one step, contradicting $\tau(S,q)=10$. Only $P$ and $Q$ remain. Lemma~\ref{lem:predhyper} forces all $P$ letters to use one common predecessor, QQ is incompatible with strong connectivity, and exchange of the two letter names leaves O-PP and O-PQ.
+
+Now suppose $D$ is mixed and relabel it as $D=\{1,8\}$ with $1\in S$ and $8\notin S$. Lemma~\ref{lem:predhyper} excludes every PD/DP combination and forces a common predecessor for PP or PQ. In the PP case at least one letter must be singular, since two permutations cannot synchronize; a singular letter with kernel $D$ cannot have a singleton preimage of $q$ at an endpoint of $D$, so the common $P$-predecessor is not $1$.
+
+In the PQ case, suppose for contradiction that the $P$-predecessor is the inside endpoint $1$. The $P$ letter must then be a permutation, so the $Q$ letter must be singular in order for the automaton to synchronize. The equation $x_1=0$ from Lemma~\ref{lem:predhyper} says that state $1$ lies in every safe image $Sw$. Since the singular $Q$ letter merges $D=\{1,8\}$, safety after that letter forces $8\notin Sw$ for every $|w|\le8$, equivalently $x_8=1$ for every safe complement. The independent equalities $x_1=0$ and $x_8=1$ would reduce the affine dimension to at most seven, again contradicting Lemma~\ref{lem:affine}. Hence the common $P$-predecessor is distinct from $1$ and may be named $2$.
+
+The remaining type pairs are therefore PP, PQ, DD, and DQ, together with their reversed orders. Reversing the order is only an exchange of letter names. The rank restrictions follow directly from Theorem~\ref{thm:uniqueD} and from the fact that every type-$D$ letter is singular. This yields the four displayed mixed families.
+\end{proof}
+
+The outside-$D$ branch is intentionally retained in the theorem. No claim in this paper requires proving that O-PP or O-PQ is empty. The enumerations in the next section concern the mixed normal forms only.
+
+\section{Mixed-branch unary depth-nine-safe counts}
+Call a single letter $c$ \emph{unary 9-safe} if
+\[
+|Sc^j|=8,\qquad 0\in Sc^j\qquad(1\le j\le9).
+\]
+Complete enumeration in the mixed normal form gives:
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Unary type & exact count\\
+\midrule
+P-permutation & 907,200\\
+P-singular & 426,720\\
+Q-permutation & 3,628,800\\
+Q-singular & 1,074,240\\
+D-singular & 449,280\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The identity $3,628,800=10!$ for Q-permutations is immediate: fixing the unique preimage of 0 leaves an arbitrary permutation of the remaining ten states. For a P-permutation with canonical predecessor $p=2$, unary nine-safety is equivalent to the entire permutation cycle containing $q=0$ being contained in $S$. If that cycle has length $\ell\in\{2,\ldots,8\}$, the $\ell-2$ additional cycle states can be chosen and ordered from the six states of $S\setminus\{0,2\}$, while the remaining $11-\ell$ states are permuted arbitrarily. Hence
+\[
+\#P_{\rm perm}=\sum_{\ell=2}^{8}\frac{6!}{(8-\ell)!}(11-\ell)!=907,200=\frac{10!}{4}.
+\]
+Thus the factor $1/4$ relative to the Q-permutation count is structural, not accidental. An independent recursive implementation, using explicit image lists rather than subset bitmasks, reproduces this value and the three singular counts below. As a further independent check, a third brute-force program fixes the relevant preimage block of $0$, enumerates each of the $10\cdot 9!$ rank-ten singular maps by lexicographic permutation of the remaining quotient-block images, and applies a direct nine-step image simulation. It independently returns 426,720 P-singular, 1,074,240 Q-singular, and 449,280 D-singular maps.
+
+If one formed all pairs of unary-safe letters before imposing two-letter safety, the four families would contain
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Family & naive two-letter count\\
+\midrule
+I-PP & 956,330,726,400\\
+I-PQ & 2,981,431,756,800\\
+II-DD & 201,852,518,400\\
+II-DQ & 2,112,981,811,200\\
+\midrule
+Total & 6,252,596,812,800\\
+\bottomrule
+\end{tabular}
+\end{center}
+Thus a naive Cartesian-product enumeration is impractical. A complete certifier must assign transitions canonically and prune partial assignments by depth-by-depth two-letter safety.
+
+\section{Structural reduction before certification}
+The analytic consequences of the exact-ten hypothesis can now be summarized independently of the finite search.
+
+\begin{theorem}[Structural reduction]\label{thm:reduction}
+If an exact-ten witness exists in the 11-state singleton-protected binary strongly connected synchronizing slice, then it satisfies:
+\begin{enumerate}[label=(\roman*)]
+\item maximal linear and affine dimension growth through depth nine;
+\item a unique global one-step merge pair $D$;
+\item every singular letter has rank ten and kernel doubleton $D$;
+\item $q\notin D$;
+\item if $D\subseteq Q\setminus S$, the candidate is in the outside branch O-PP or O-PQ;
+\item if $D$ is mixed, the candidate is in one of I-PP, I-PQ, II-DD, or II-DQ, and every letter is individually unary depth-nine-safe.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Item (i) is Lemma~\ref{lem:affine}; items (ii)--(iii) are Theorem~\ref{thm:uniqueD}; item (iv) is Theorem~\ref{thm:qnotD}. The branch statements (v)--(vi) are exactly Theorem~\ref{thm:families}, whose proof uses Corollary~\ref{cor:DnotinS} to exclude the case $D\subseteq S$.
+\end{proof}
+
+\section{Complete elimination of the exact-ten branches}
+The analytic reduction leaves a finite family of normal forms. We now exhaust them exactly.
+
+\begin{theorem}[Exhaustive exact-ten elimination]\label{thm:certifier}
+There is no binary strongly connected synchronizing exact-ten candidate in any of the six branches O-PP, O-PQ, I-PP, I-PQ, II-DD, or II-DQ.
+\end{theorem}
+\begin{proof}
+Every exact-ten candidate must satisfy Theorem~\ref{thm:reduction}. In particular, each letter is individually unary depth-nine-safe, every word of length at most nine is safe, and Lemma~\ref{lem:affine} forces cumulative affine dimension exactly $i$ through depth $i=1,\ldots,9$.
+
+The certifier enumerates every admissible letter in the appropriate normal form. For the first letter it quotients by the full state-relabeling group that preserves $S$, $q$, $D$, and, when present, the canonical $P$-predecessor. One orbit representative is retained from each orbit. This quotient is exact because conjugation preserves transition rank, the kernel pair, predecessor type, unary safety, two-letter safety, affine dimension, strong connectivity, and synchronizability. For PP families, at least one letter is singular; exchanging the two letter names allows the first letter to be chosen singular. For PQ families the two possibilities ``P singular'' and ``P permutation, Q singular'' are enumerated separately. Thus the displayed subcases cover every normal-form automaton.
+
+For the II mixed normal form, our canonical labels are $q=0$, $S=\{0,\ldots,7\}$, and $D=\{1,8\}$. The full relabeling group therefore fixes $0,1,8$ pointwise and is
+\[
+G_{\rm II}=\operatorname{Sym}(\{2,\ldots,7\})\times \operatorname{Sym}(\{9,10\}),
+\qquad |G_{\rm II}|=6!\,2!=1440.
+\]
+It is generated by the adjacent transpositions $(2\ 3),(3\ 4),(4\ 5),(5\ 6),(6\ 7)$ together with $(9\ 10)$. A generator-edge Union--Find audit on all 449,280 unary depth-nine-safe D-singular maps checks 2,695,680 conjugacy edges and returns exactly 822 connected components, reproducing the first-letter quotient used in both II-DD and II-DQ.
+
+The other canonical normal forms have equally explicit relabeling groups. In mixed family I, the canonical $P$-predecessor $p=2$ is also fixed, so
+\[
+G_{\rm I}=\operatorname{Sym}(\{3,4,5,6,7\})\times \operatorname{Sym}(\{9,10\}),
+\qquad |G_{\rm I}|=5!\,2!=240,
+\]
+with generators $(3\ 4),(4\ 5),(5\ 6),(6\ 7),(9\ 10)$. In the outside-$D$ normal form the canonical labels are $D=\{8,9\}$, $q=0$, and $p=1$, while state $10$ is the distinguished third point of $Q\setminus S$. Hence
+\[
+G_{\rm O}=\operatorname{Sym}(\{2,3,4,5,6,7\})\times \operatorname{Sym}(\{8,9\}),
+\qquad |G_{\rm O}|=6!\,2!=1440,
+\]
+with generators $(2\ 3),(3\ 4),(4\ 5),(5\ 6),(6\ 7),(8\ 9)$.
+
+A second implementation audits all five distinct first-letter quotient universes using only these generator edges, rather than the certifier's enumeration of every group element. The results are
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+first-letter universe & maps & generators & generator edges & orbits\\
+\midrule
+II: D-singular & 449,280 & 6 & 2,695,680 & 822\\
+I: P-singular & 426,720 & 5 & 2,133,600 & 3,030\\
+I: P-permutation & 907,200 & 5 & 4,536,000 & 5,520\\
+O: P-singular & 374,400 & 6 & 2,246,400 & 569\\
+O: P-permutation & 907,200 & 6 & 5,443,200 & 1,186\\
+\bottomrule
+\end{tabular}
+\end{center}
+There are no missing generator images in any audit, every component-size sum returns the full map count, and all five orbit totals agree with the first-letter counts used by the branch certifier. Thus every symmetry quotient appearing in the eight computational subcases has an independent generator-level check.
+
+Before full checking, the first two affine levels are used only as exact necessary filters. A surviving ordered pair is then explored in the subset graph from $S$ through depth nine. The certifier rejects the pair if any reachable subset avoids $q$ or has size below eight, or if the cumulative affine rank differs from the forced value at any depth. Every local survivor is finally checked for strong connectivity and for synchronizability using the complete unordered-pair automaton.
+
+The exhaustive counts are:
+\begin{center}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Subcase & first-letter orbits & second letters & full pairs & local survivors & BSC survivors\\
+\midrule
+II-DD & 822 & 449,280 & 9,615,680 & 0 & 0\\
+II-DQ & 822 & 4,703,040 & 44,971,752 & 88 & 0\\
+I-PP & 3,030 & 1,333,920 & 91,957,456 & 677 & 0\\
+I-PQ: P-sing/Q-any & 3,030 & 4,703,040 & 136,030,656 & 677 & 0\\
+I-PQ: P-perm/Q-sing & 5,520 & 1,074,240 & 70,824,720 & 430 & 0\\
+O-PP & 569 & 1,281,600 & 23,496,800 & 0 & 0\\
+O-PQ: P-sing/Q-any & 569 & 4,616,640 & 34,903,200 & 0 & 0\\
+O-PQ: P-perm/Q-sing & 1,186 & 987,840 & 20,328,240 & 0 & 0\\
+\midrule
+Total & -- & -- & 432,128,504 & 1,872 & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+In the four subcases with nonzero local survivors, every survivor fails both strong connectivity and synchronizability; in particular none belongs to the target BSC slice. As an additional implementation-independent spot check, one concrete local survivor was exported from each of II-DQ, I-PP, I-PQ (P-singular/Q-any), and I-PQ (P-permutation/Q-singular). A separate checker tested strong connectivity by transitive closure and synchronizability by breadth-first search on the full subset automaton, rather than by the certifier's unordered-pair test. All four samples again failed both properties. Hence all six branches are empty in the target slice.
+\end{proof}
+
+\begin{theorem}[Exact value]\label{thm:exact9}
+For the singleton-protected binary strongly connected synchronizing slice at $(d,k)=(3,7)$,
+\[
+\boxed{T_{\BSC}(3,7)=9}.
+\]
+\end{theorem}
+\begin{proof}
+Proposition~\ref{prop:witness} gives the lower bound nine. If the value were ten, Theorem~\ref{thm:reduction} would place an extremal automaton in one of the six normal-form branches, contradicting Theorem~\ref{thm:certifier}. The general upper bound is ten, so the only remaining value is nine.
+\end{proof}
+
+\section{Scope, limitations, and reproducibility}
+The exact value above is a hybrid analytic--finite result. The branch reduction is proved symbolically; the last exclusion step is an exhaustive finite computation over the resulting normal forms. The certifier does not infer absence from random search. It enumerates the admissible unary-safe letters, quotients only by explicitly specified state relabelings, checks every retained two-letter candidate through depth nine, and then applies exact graph tests for the two defining BSC properties.
+
+The original reproducibility core independently checks the explicit distance-nine witness and all 2,046 nonempty binary words through length ten for that witness. The mixed-branch unary counts are reproduced by a second implementation that uses a different enumeration strategy: the P-permutation value is obtained from the closed formula above, while P-singular, Q-singular, and D-singular maps are generated by recursive bijection assignment on the ten kernel blocks and tested using explicit eight-state image lists. This implementation returns 907,200, 426,720, 3,628,800, 1,074,240, and 449,280, respectively. A third singular-map implementation then exhausts $10\cdot9!=3,628,800$ candidates for each of the P-, Q-, and D-singular types using lexicographic target permutations and a separate direct image simulator, again returning 426,720, 1,074,240, and 449,280. The package further contains independent generator-edge orbit audits for all five distinct first-letter quotient universes, together with a cross-branch local-survivor checker that uses full-subset synchronization BFS. The new exact-ten branch certifier is separate and records source, frozen outputs, and SHA-256 hashes.
+
+No additional global implication from maximal affine growth to non-strong-connectivity is assumed in the proof. Instead, after the proved six-branch normal-form reduction, the finite certifier eliminates every branch directly. The earlier unrecovered 73.15-million-neighborhood, redirect-lift, and 20-million exploratory searches remain excluded from the theorem and are unnecessary for Theorem~\ref{thm:exact9}.
+
+The claim is intentionally narrow: it concerns the 11-state singleton-protected binary strongly connected synchronizing slice represented by $T_{\BSC}(3,7)$ here. It is not a general formula for all $(d,k)$, larger alphabets, non-singleton $A$, or arbitrary non-strongly-connected synchronizing automata.
+
+\section{Conclusion}
+At $(d,k)=(3,7)$ the general avoid-or-compress and Frankl--Pin mechanisms both give ten. The explicit witness attains nine, while equality ten forces a rigid global merge-pair structure and one of six normal forms. Exhaustive certification of those forms leaves no binary strongly connected synchronizing survivor. Consequently the exact singleton-protected BSC value is
+\[
+T_{\BSC}(3,7)=9.
+\]
+This is the first point in the present diagonal program where the coincidence of the two general upper bounds is shown not to be attainable in the target binary strongly connected synchronizing slice.
+
+\section*{Code and evidence availability}
+The accompanying reproducibility package contains the exact-nine witness checker, the direct word audit through length ten, the original unary mixed-normal-form enumerator, an independent unary-count implementation using a separate recursion/image-list strategy, a third brute-force singular-count enumerator, independent generator-edge audits for every first-letter symmetry quotient, and the complete exact-ten branch certifier. The branch certifier covers the eight computational subcases listed in Theorem~\ref{thm:certifier}; all outputs and release files are covered by SHA-256 manifests.
+
+\begin{thebibliography}{9}
+\bibitem{Szykula2018}
+M. Szyku\l a,
+\newblock Improving the Upper Bound on the Length of the Shortest Reset Word,
+\newblock \emph{STACS 2018}, LIPIcs 96, Article 56, 2018.
+\newblock doi:10.4230/LIPIcs.STACS.2018.56.
+
+\bibitem{Szykula2026}
+M. Szyku\l a,
+\newblock Synchronizing Automata: Open Problems,
+\newblock \emph{Electronic Proceedings in Theoretical Computer Science} 451 (2026), 33--47.
+\newblock doi:10.4204/EPTCS.451.3; arXiv:2608.24245.
+
+\bibitem{KKS2016}
+A. Kisielewicz, J. Kowalski, and M. Szyku\l a,
+\newblock Experiments with Synchronizing Automata,
+\newblock in \emph{Implementation and Application of Automata}, LNCS 9705, 176--188, 2016.
+\newblock doi:10.1007/978-3-319-40946-7\_15; arXiv:1607.04025.
+
+\bibitem{Volkov2022}
+M. V. Volkov,
+\newblock Synchronization of finite automata,
+\newblock \emph{Russian Mathematical Surveys} 77(5) (2022), 819--891.
+
+\bibitem{Ferens2021}
+R. Ferens, M. Szyku\l a, and V. Vorel,
+\newblock Lower Bounds on Avoiding Thresholds,
+\newblock \emph{MFCS 2021}, LIPIcs 202, Article 46, 2021.
+\newblock doi:10.4230/LIPIcs.MFCS.2021.46.
+\end{thebibliography}
+
+\end{document}

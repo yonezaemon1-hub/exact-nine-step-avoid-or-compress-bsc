@@ -1,0 +1,4 @@
+I_Psing candidates=426720 generators=5 edges=2133600 missing=0 orbits=3030 sum=426720 expected=3030 PASS=1
+I_Pperm candidates=907200 generators=5 edges=4536000 missing=0 orbits=5520 sum=907200 expected=5520 PASS=1
+O_Psing candidates=374400 generators=6 edges=2246400 missing=0 orbits=569 sum=374400 expected=569 PASS=1
+O_Pperm candidates=907200 generators=6 edges=5443200 missing=0 orbits=1186 sum=907200 expected=1186 PASS=1

@@ -1,0 +1,29 @@
+II-DQ
+  strongly_connected = False
+  SCCs = [[0, 1, 2, 3, 4, 6, 7, 9, 10], [5, 8]]
+  synchronizing = False
+  reachable_subset_count = 4
+  minimum_reachable_rank = 9
+  one_minimum_image = [0, 1, 2, 3, 4, 6, 7, 9, 10]
+I-PP
+  strongly_connected = False
+  SCCs = [[0, 1, 2, 3, 4, 6, 7, 9, 10], [5, 8]]
+  synchronizing = False
+  reachable_subset_count = 4
+  minimum_reachable_rank = 9
+  one_minimum_image = [0, 1, 2, 3, 4, 6, 7, 9, 10]
+I-PQ(P-sing/Q-any)
+  strongly_connected = False
+  SCCs = [[0, 1, 2, 3, 4, 6, 7, 9, 10], [5, 8]]
+  synchronizing = False
+  reachable_subset_count = 4
+  minimum_reachable_rank = 9
+  one_minimum_image = [0, 1, 2, 3, 4, 6, 7, 9, 10]
+I-PQ(P-perm/Q-sing)
+  strongly_connected = False
+  SCCs = [[0, 1, 2, 3, 5, 6, 7, 9, 10], [4, 8]]
+  synchronizing = False
+  reachable_subset_count = 4
+  minimum_reachable_rank = 9
+  one_minimum_image = [0, 1, 2, 3, 5, 6, 7, 9, 10]
+PASS_CROSSBRANCH_LOCAL_SURVIVOR_SPOTCHECK

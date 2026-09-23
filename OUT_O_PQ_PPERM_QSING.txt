@@ -1,0 +1,7 @@
+A_orbit_reps=1186
+B_unary_candidates=987840
+depth2_candidates_tested=20328240
+pairs_full_checked=20328240
+local_survivors=0
+bsc_survivors=0
+seconds=5.38944

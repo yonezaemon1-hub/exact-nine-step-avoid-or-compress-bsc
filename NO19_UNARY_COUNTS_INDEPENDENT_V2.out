@@ -1,0 +1,6 @@
+P-permutation(formula)=907200
+P-singular(recursive-independent)=426720
+Q-permutation(formula)=3628800
+Q-singular(recursive-independent)=1074240
+D-singular(recursive-independent)=449280
+PASS_INDEPENDENT_UNARY_COUNTS
