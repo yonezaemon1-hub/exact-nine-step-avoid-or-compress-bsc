@@ -92,6 +92,15 @@ SHA-256 3999BA6A868B698C6A2B55E9B203F9E3805E8EAD371CC50F09AC00DC19B71937
 
 This is a hybrid analytic-finite theorem. The computation is used only after the manuscript proves the exact-ten structural reduction to the six normal-form branches. Earlier exploratory neighborhood / redirect / 20M searches are not part of the claim.
 
+
+## Related failed research note
+
+A separate negative-result note records a rejected attempt to transfer Zhang's 2026 triple-rendezvous construction directly to four-set synchronization:
+
+- [FAIL — A Computational Audit of Direct Zhang-Type Transfer to Four-Set Synchronization](FAIL_K4_ZHANG_TRANSFER_AUDIT.md)
+
+This failed candidate is **not counted as a successful paper** and does not change the theorem or archival status of this repository.
+
 ## Status
 
 Public release complete on 23 September 2026. GitHub Release `v1.0.0` passed the exhaustive release gate. The archival software record is published at Zenodo under DOI `10.5281/zenodo.22916196`.
